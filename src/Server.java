@@ -1,7 +1,3 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -14,19 +10,19 @@ public class Server {
     private final static int PORT = 4444;
 
     public static void main(String[] args) {
-        int nrPolaczenia = 1;
+        int connectionNumber = 1;
 
         try {
             server = new ServerSocket(PORT);
-            System.out.println("Serwer uruchomiony na porcie: " + PORT);
+            System.out.println("Server started with port: " + PORT);
             while (true) {
                 Socket socket = server.accept();
                 InetAddress addr = socket.getInetAddress();
-                System.out.println("Połaczenie numer: " + nrPolaczenia + " z adresu: "
+                System.out.println("Connection number: " + connectionNumber + " from adress: "
                         + addr.getHostName() + " ["
                         + addr.getHostAddress() + "]");
-                new EventHandler(socket, nrPolaczenia).start();
-                nrPolaczenia++;
+                new EventHandler(socket, connectionNumber).start();
+                connectionNumber++;
             }
         } catch (Exception e) {
             System.out.println(e);
@@ -34,34 +30,3 @@ public class Server {
     }
 }
 
-class EventHandler extends Thread {
-    private Socket socket;
-    private int nrPolaczenia;
-
-    public EventHandler(Socket socket, int nrPolaczenia) {
-        this.socket = socket;
-        this.nrPolaczenia = nrPolaczenia;
-    }
-
-    public void run() {
-        try {
-            BufferedReader wejscie = new BufferedReader(new InputStreamReader
-                    (socket.getInputStream()));
-            PrintWriter wyjscie = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            wyjscie.println("Serwer wita użytkownika! Komenda /end kończy połączenie!");
-            boolean done = false;
-            while (!done) {
-                String lancuch = wejscie.readLine();
-                wyjscie.println("Połączenie: " + nrPolaczenia + " Echo: " +
-                        lancuch);
-                if (lancuch.trim().toLowerCase().equals("/end"))
-                    done = true;
-            }
-            System.out.println("Połączenie numer: "
-                    + nrPolaczenia + " zostało zakończone");
-            socket.close();
-        } catch (Exception e) {
-            System.out.println(e);
-        }
-    }
-}
