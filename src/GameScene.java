@@ -13,7 +13,7 @@ import java.util.ConcurrentModificationException;
  */
 public class GameScene extends Pane {
     private final static int SNAKE_SIZE = 10;
-    private final static int ANIMATION_SPEED = 30;
+    private static int ANIMATION_SPEED = 20;
     private int snakeLength = 1;
     private int gameSceneWidth;
     private int gameSceneHeight;
@@ -25,10 +25,6 @@ public class GameScene extends Pane {
     private int posX = 10;
     private int posY = 10;
 
-    public void setLastDirection(KeyCode lastDirection) {
-        this.lastDirection = lastDirection;
-    }
-
     public GameScene() {
         gameSceneHeight = 600;
         gameSceneWidth = 800;
@@ -39,35 +35,47 @@ public class GameScene extends Pane {
         getChildren().add(canvas);
 
         AnimationTimer timer = new AnimationTimer() {
+            private long lastUpdate = 0;
+
             @Override
             public void handle(long now) {
-                boolean[][] cellsBoard = new boolean[gameSceneWidth / SNAKE_SIZE + 2][gameSceneHeight / SNAKE_SIZE + 2];
-
-                try {
-                    for (int i = 0; i < snake.size(); i++) {
-                        cellsBoard[snake.get(i).x + 1][snake.get(i).y + 1] = true;
-                    }
-                } catch (ArrayIndexOutOfBoundsException e) {
-                    System.out.println("Out of bounds at thread start");
-                } catch (NullPointerException e) {
-                    System.out.println("Nullpointer at thread start");
-                }
-
-                try {
-                    Thread.sleep(ANIMATION_SPEED);
-                    if (snake.get(snake.size() - 1).equals(apple.get(0))) {
-                        snakeLength++;
-                        apple.clear();
-                        apple.add(generateApple());
-                    }
-
-                    move();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                if (now - lastUpdate >= ANIMATION_SPEED * 1_000_000) {
+                    updateScene();
+                    lastUpdate = now;
                 }
             }
         };
         timer.start();
+    }
+
+    public void setLastDirection(KeyCode lastDirection) {
+        this.lastDirection = lastDirection;
+    }
+
+    public void updateScene() {
+        boolean[][] cellsBoard = new boolean[gameSceneWidth / SNAKE_SIZE + 2][gameSceneHeight / SNAKE_SIZE + 2];
+
+        try {
+            for (int i = 0; i < snake.size(); i++) {
+                cellsBoard[snake.get(i).x + 1][snake.get(i).y + 1] = true;
+            }
+        } catch (ArrayIndexOutOfBoundsException e) {
+            System.out.println("Out of bounds at thread start");
+        } catch (NullPointerException e) {
+            System.out.println("Nullpointer at thread start");
+        }
+
+        try {
+            //Thread.sleep(ANIMATION_SPEED);
+            if (snake.get(snake.size() - 1).equals(apple.get(0))) {
+                snakeLength++;
+                apple.clear();
+                apple.add(generateApple());
+            }
+            move();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private Point generateApple() {
