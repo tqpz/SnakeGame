@@ -19,7 +19,6 @@ import java.util.Set;
 public class GameScene extends Pane {
     private final static int SNAKE_SIZE = 10;
     private static int ANIMATION_SPEED = 50;
-    boolean crash = false;
     private int snakeLength;
     private int gameSceneWidth;
     private int gameSceneHeight;
@@ -34,7 +33,7 @@ public class GameScene extends Pane {
     private int posX = 10;
     private int posY = 10;
 
-    public GameScene() {
+    GameScene() {
         getChildren().add(canvas);
         isRunning = false;
 
@@ -66,44 +65,7 @@ public class GameScene extends Pane {
         };
     }
 
-    public AnimationTimer getTimer() {
-        return timer;
-    }
-
-    public void setInitialState() {
-        if (isRunning) {
-            timer.stop();
-            isRunning = false;
-        }
-        isRunning = false;
-
-        posX = 25;
-        posY = 25;
-
-        gameSceneHeight = 600;
-        gameSceneWidth = 800;
-        canvas.setWidth(gameSceneWidth);
-        canvas.setHeight(gameSceneHeight);
-
-        snake = new ArrayList<>(snakeLength);
-        snake.add(new Point(posX, posY));
-        apple = new ArrayList<>(0);
-        addApples(7);
-
-        dead = false;
-        ANIMATION_SPEED = 50;
-        snakeLength = 1;
-    }
-
-    public KeyCode getLastDirection() {
-        return lastDirection;
-    }
-
-    public void setLastDirection(KeyCode lastDirection) {
-        this.lastDirection = lastDirection;
-    }
-
-    public void updateScene() {
+    private void updateScene() {
         if (!dead) {
             boolean[][] board = new boolean[gameSceneWidth / SNAKE_SIZE][gameSceneHeight / SNAKE_SIZE];
             try {
@@ -113,14 +75,8 @@ public class GameScene extends Pane {
             } catch (ArrayIndexOutOfBoundsException e) {
                 timer.stop();
                 dead = true;
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("Score");
-                alert.setHeaderText("You died!");
-                alert.setContentText("Your score: " + (snakeLength - 1) / 4);
-                alert.show();
-
-            } catch (NullPointerException e) {
-                System.out.println("Nullpointer at thread start");
+                showDeadPopup();
+            } catch (NullPointerException ignored) {
             }
 
             try {
@@ -140,10 +96,15 @@ public class GameScene extends Pane {
         }
     }
 
-    public void addApples(int numof) {
-        for (int i = 0; i < numof; i++) {
-            apple.add(generateApple());
-        }
+    protected void layoutChildren() {
+        super.layoutChildren();
+        gc.clearRect(0, 0, getWidth(), getHeight());
+        gc.setLineWidth(0.2);
+
+        drawCanvasFrame();
+        drawSnake();
+        drawApple();
+        drawGrid();
     }
 
     private Point generateApple() {
@@ -152,19 +113,33 @@ public class GameScene extends Pane {
         return new Point(x, y);
     }
 
+    private void addApples(int numof) {
+        for (int i = 0; i < numof; i++) {
+            apple.add(generateApple());
+        }
+    }
+
     public void resetAll() {
         setInitialState();
         requestLayout();
-        crash = false;
+        dead = false;
+    }
+
+    private void showDeadPopup() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Score");
+        alert.setHeaderText("You died!");
+        alert.setContentText("Your score: " + (snakeLength - 1) / 4);
+        alert.show();
     }
 
     private void move() {
-
-        if (!crash) {
+        if (!dead) {
             Set<Point> set = new HashSet<>(snake);
 
             if (set.size() < snake.size()) {
-                crash = true;
+                dead = true;
+                showDeadPopup();
             }
 
             if (lastDirection == KeyCode.DOWN) {
@@ -202,7 +177,7 @@ public class GameScene extends Pane {
         }
     }
 
-    public void drawCanvasFrame() {
+    private void drawCanvasFrame() {
         gc.strokeLine(0, canvas.getHeight(), canvas.getWidth(), canvas.getHeight());
         gc.strokeLine(canvas.getWidth(), 0, canvas.getWidth(), canvas.getHeight());
         gc.strokeLine(0, 0, 0, canvas.getHeight());
@@ -253,14 +228,42 @@ public class GameScene extends Pane {
         }
     }
 
-    protected void layoutChildren() {
-        super.layoutChildren();
-        gc.clearRect(0, 0, getWidth(), getHeight());
-        gc.setLineWidth(0.2);
 
-        drawCanvasFrame();
-        drawSnake();
-        drawApple();
-        drawGrid();
+    private void setInitialState() {
+        if (isRunning) {
+            timer.stop();
+            isRunning = false;
+        }
+        isRunning = false;
+
+        posX = 25;
+        posY = 25;
+
+        gameSceneHeight = 600;
+        gameSceneWidth = 800;
+        canvas.setWidth(gameSceneWidth);
+        canvas.setHeight(gameSceneHeight);
+
+        snake = new ArrayList<>(snakeLength);
+        snake.add(new Point(posX, posY));
+        apple = new ArrayList<>(0);
+        addApples(7);
+
+        dead = false;
+        ANIMATION_SPEED = 50;
+        snakeLength = 1;
     }
+
+    public KeyCode getLastDirection() {
+        return lastDirection;
+    }
+
+    public void setLastDirection(KeyCode lastDirection) {
+        this.lastDirection = lastDirection;
+    }
+
+    public AnimationTimer getTimer() {
+        return timer;
+    }
+
 }
