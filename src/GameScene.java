@@ -18,9 +18,9 @@ import java.util.Set;
  */
 public class GameScene extends Pane {
     private final static int SNAKE_SIZE = 10;
-    private static int ANIMATION_SPEED = 30;
+    private static int ANIMATION_SPEED = 50;
     boolean crash = false;
-    private int snakeLength = 1;
+    private int snakeLength;
     private int gameSceneWidth;
     private int gameSceneHeight;
     private AnimationTimer timer;
@@ -35,8 +35,21 @@ public class GameScene extends Pane {
     private int posY = 10;
 
     public GameScene() {
-        setInitialState();
         getChildren().add(canvas);
+        isRunning = false;
+
+        posX = 25;
+        posY = 25;
+
+        gameSceneHeight = 600;
+        gameSceneWidth = 800;
+        canvas.setWidth(gameSceneWidth);
+        canvas.setHeight(gameSceneHeight);
+
+        snake = new ArrayList<>(snakeLength);
+        snake.add(new Point(posX, posY));
+        apple = new ArrayList<>(0);
+        addApples(7);
 
         timer = new AnimationTimer() {
             private long lastUpdate = 0;
@@ -75,11 +88,11 @@ public class GameScene extends Pane {
         snake = new ArrayList<>(snakeLength);
         snake.add(new Point(posX, posY));
         apple = new ArrayList<>(0);
-        apple.add(generateApple());
+        addApples(7);
 
         dead = false;
-        ANIMATION_SPEED = 30;
-        snakeLength = 100;
+        ANIMATION_SPEED = 50;
+        snakeLength = 1;
     }
 
     public KeyCode getLastDirection() {
@@ -92,10 +105,10 @@ public class GameScene extends Pane {
 
     public void updateScene() {
         if (!dead) {
-            boolean[][] cellsBoard = new boolean[gameSceneWidth / SNAKE_SIZE][gameSceneHeight / SNAKE_SIZE];
+            boolean[][] board = new boolean[gameSceneWidth / SNAKE_SIZE][gameSceneHeight / SNAKE_SIZE];
             try {
                 for (int i = 0; i < snake.size(); i++) {
-                    cellsBoard[snake.get(i).x + 1][snake.get(i).y + 1] = true;
+                    board[snake.get(i).x + 1][snake.get(i).y + 1] = true;
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 timer.stop();
@@ -103,7 +116,7 @@ public class GameScene extends Pane {
                 Alert alert = new Alert(Alert.AlertType.INFORMATION);
                 alert.setTitle("Score");
                 alert.setHeaderText("You died!");
-                alert.setContentText("Your score: " + (snakeLength - 1));
+                alert.setContentText("Your score: " + (snakeLength - 1) / 4);
                 alert.show();
 
             } catch (NullPointerException e) {
@@ -111,16 +124,25 @@ public class GameScene extends Pane {
             }
 
             try {
-                if (snake.get(snake.size() - 1).equals(apple.get(0))) {
-                    snakeLength++;
-                    ANIMATION_SPEED--;
-                    apple.clear();
-                    apple.add(generateApple());
+                for (int i = 0; i < apple.size(); i++) {
+                    if (snake.get(snake.size() - 1).equals(apple.get(i))) {
+                        snakeLength += 4;
+                        ANIMATION_SPEED--;
+                        apple.remove(i);
+                        addApples(1);
+                        System.out.println(ANIMATION_SPEED);
+                    }
                 }
                 move();
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    public void addApples(int numof) {
+        for (int i = 0; i < numof; i++) {
+            apple.add(generateApple());
         }
     }
 
@@ -134,7 +156,6 @@ public class GameScene extends Pane {
         setInitialState();
         requestLayout();
         crash = false;
-        //timer.start();
     }
 
     private void move() {
@@ -197,8 +218,7 @@ public class GameScene extends Pane {
                         SNAKE_SIZE,
                         SNAKE_SIZE);
             }
-        } catch (ConcurrentModificationException e) {
-        } catch (NullPointerException e) {
+        } catch (ConcurrentModificationException | NullPointerException ignored) {
         }
     }
 
@@ -209,8 +229,7 @@ public class GameScene extends Pane {
                 gc.drawImage(img, SNAKE_SIZE + ((SNAKE_SIZE * newPoint.x) - 3), SNAKE_SIZE + (SNAKE_SIZE * newPoint.y) - 3);
 
             }
-        } catch (ConcurrentModificationException e) {
-        } catch (NullPointerException e) {
+        } catch (ConcurrentModificationException | NullPointerException ignored) {
         }
     }
 
