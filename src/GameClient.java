@@ -2,6 +2,7 @@ import javafx.application.Application;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
@@ -9,14 +10,25 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 import java.net.Socket;
+import java.util.Optional;
 
 /**
  * Created by Mateusz on 29.03.2017.
  */
 public class GameClient extends Application {
+    private String nick;
 
     public static void main(String args[]) throws Exception {
         launch(args);
+    }
+
+    private void showNickPopup() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Hello!");
+        dialog.setHeaderText("Register");
+        dialog.setContentText("Please enter your name:");
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(name -> nick = name);
     }
 
     @Override
@@ -44,7 +56,6 @@ public class GameClient extends Application {
         root.setCenter(gameScene);
         root.setRight(settingBar);
 
-
         scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
             if (key.getCode() == KeyCode.DOWN && gameScene.getLastDirection() != KeyCode.UP)
                 gameScene.setLastDirection(KeyCode.DOWN);
@@ -58,6 +69,8 @@ public class GameClient extends Application {
 
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        showNickPopup();
 
         Socket clientSocket = new Socket("localhost", 4444);
         clientSocket.close();
