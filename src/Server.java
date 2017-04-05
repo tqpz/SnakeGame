@@ -1,3 +1,6 @@
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -11,6 +14,7 @@ public class Server {
 
     public static void main(String[] args) {
         int connectionNumber = 1;
+        ObservableList<String> items = FXCollections.observableArrayList();
 
         try {
             server = new ServerSocket(PORT);
@@ -21,7 +25,7 @@ public class Server {
                 System.out.println("Connection number: " + connectionNumber + " from adress: "
                         + addr.getHostName() + " ["
                         + addr.getHostAddress() + "]");
-                new EventHandler(socket, connectionNumber).start();
+                new EventHandler(socket, connectionNumber, items).start();
                 connectionNumber++;
             }
         } catch (Exception e) {

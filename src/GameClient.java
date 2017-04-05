@@ -13,14 +13,17 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Optional;
 
 /**
  * Created by Mateusz on 29.03.2017.
  */
-public class GameClient extends Application implements Serializable {
+public class GameClient extends Application {
     private static boolean closed = false;
     private String nick;
     private GameScene gameScene;
@@ -40,6 +43,21 @@ public class GameClient extends Application implements Serializable {
         });
     }
 
+    public void parseInputString(String fromServer, ObservableList<String> items) {
+        int lastcoma = 1;
+        for (int i = 1; i < fromServer.length(); i++) {
+            if (fromServer.charAt(i) == ',') {
+                if (lastcoma > 2) {
+                    items.add(fromServer.substring(lastcoma + 2, i));
+                    lastcoma = i;
+                } else {
+                    items.add(fromServer.substring(lastcoma, i));
+                    lastcoma = i;
+                }
+            }
+        }
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Snake");
@@ -53,22 +71,8 @@ public class GameClient extends Application implements Serializable {
         Button reset = new Button("Reset");
         Button start = new Button("Start");
 
-//        TextArea scoreBoard = new TextArea();
-//        scoreBoard.setMaxWidth(150);
-//        scoreBoard.setMaxHeight(800);
-//        scoreBoard.setLayoutY(60);
-//        scoreBoard.setEditable(false);
-//        scoreBoard.setFocusTraversable(false);
-//        scoreBoard.focusedProperty().addListener((observable,  oldValue,  newValue) -> {
-//            if(newValue){
-//                gameScene.requestFocus(); // Delegate the focus to container
-//                //firstTime.setValue(false); // Variable value changed for future references
-//            }
-//        });
-
         ListView<String> players = new ListView<>();
-        ObservableList<String> items = FXCollections.observableArrayList(
-                "Mati10", "Stefan", "UltraKnur2000", "Korwin Mekka");
+        ObservableList<String> items = FXCollections.observableArrayList();
         players.setItems(items);
         players.setLayoutY(50);
         players.setMaxHeight(400);
@@ -112,6 +116,25 @@ public class GameClient extends Application implements Serializable {
         System.out.println(fromServer);
         output.println(nick);
 
+        fromServer = inFromServer.readLine();
+
+        parseInputString(fromServer, items);
+
+        Thread someThread = new Thread() {
+            @Override
+            public void run() {
+                while (!gameScene.isDead()) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                output.println(gameScene.getLastScore());
+            }
+        };
+
+        someThread.start();
 
         primaryStage.setOnCloseRequest(e -> {
             Platform.exit();

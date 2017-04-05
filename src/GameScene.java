@@ -18,8 +18,9 @@ import java.util.Set;
  */
 public class GameScene extends Pane {
     private final static int SNAKE_SIZE = 10;
-    private static int ANIMATION_SPEED = 50;
-    private int snakeLength;
+    private static int ANIMATION_SPEED = 70;
+    private int snakeLength = 1;
+    private int lastScore;
     private int gameSceneWidth;
     private int gameSceneHeight;
     private AnimationTimer timer;
@@ -65,6 +66,18 @@ public class GameScene extends Pane {
         };
     }
 
+    public int getLastScore() {
+        return lastScore;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
     private void updateScene() {
         if (!dead) {
             boolean[][] board = new boolean[gameSceneWidth / SNAKE_SIZE][gameSceneHeight / SNAKE_SIZE];
@@ -74,7 +87,6 @@ public class GameScene extends Pane {
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
                 timer.stop();
-                dead = true;
                 showDeadPopup();
             } catch (NullPointerException ignored) {
             }
@@ -126,10 +138,12 @@ public class GameScene extends Pane {
     }
 
     private void showDeadPopup() {
+        dead = true;
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        lastScore = (snakeLength - 1) / 4;
         alert.setTitle("Score");
         alert.setHeaderText("You died!");
-        alert.setContentText("Your score: " + (snakeLength - 1) / 4);
+        alert.setContentText("Your score: " + lastScore);
         alert.show();
     }
 
@@ -138,7 +152,6 @@ public class GameScene extends Pane {
             Set<Point> set = new HashSet<>(snake);
 
             if (set.size() < snake.size()) {
-                dead = true;
                 showDeadPopup();
             }
 
