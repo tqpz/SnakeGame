@@ -6,8 +6,8 @@ import java.net.Socket;
  * Created by Mateusz on 29.03.2017.
  */
 public class Server {
-    private static ServerSocket server;
     private final static int PORT = 4444;
+    private static ServerSocket server;
 
     public static void main(String[] args) {
         int connectionNumber = 1;
