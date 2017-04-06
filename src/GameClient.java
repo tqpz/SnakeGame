@@ -1,7 +1,11 @@
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -12,6 +16,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import javafx.util.Duration;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
@@ -19,6 +24,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
 
 /**
  * Created by Mateusz on 29.03.2017.
@@ -58,6 +64,15 @@ public class GameClient extends Application {
         }
     }
 
+    //TODO sorting scoreboard by score -> on top best scores
+    //TODO user want to set nickname once, not every time he restarts game
+    public ObservableList<String> sortScoreBoard(ObservableList<String> items) {
+        for (int i = 0; i < items.size(); i++) {
+
+        }
+        return items;
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         primaryStage.setTitle("Snake");
@@ -68,7 +83,7 @@ public class GameClient extends Application {
         Pane settingBar = new Pane();
         root.setPadding(new Insets(10, 20, 10, 20));
 
-        Button reset = new Button("Reset");
+        Button reset = new Button("Try again");
         Button start = new Button("Start");
 
         ListView<String> players = new ListView<>();
@@ -85,8 +100,72 @@ public class GameClient extends Application {
 
         settingBar.getChildren().addAll(reset, start, players);
 
-        start.setOnAction(event -> gameScene.getTimer().start());
-        reset.setOnAction(event -> gameScene.resetAll());
+        start.setOnAction(event -> {
+            reset.setDisable(true);
+            String fromServer;
+            items.clear();
+
+            try {
+                Socket clientSocket = new Socket("localhost", 4444);
+                showNickPopup();
+                gameScene.getTimer().start();
+
+                BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
+
+                fromServer = inFromServer.readLine();
+                System.out.println(fromServer);
+                output.println(nick);
+
+                fromServer = inFromServer.readLine();
+
+                parseInputString(fromServer, items);
+
+                Service<Void> service = new Service<Void>() {
+                    @Override
+                    protected Task<Void> createTask() {
+                        return new Task<Void>() {
+                            @Override
+                            protected Void call() throws Exception {
+                                //Background work
+                                while (!gameScene.isDead()) {
+                                    try {
+                                        Thread.sleep(1000);
+                                    } catch (InterruptedException e) {
+                                        e.printStackTrace();
+                                    }
+                                }
+                                try {
+                                    output.println(gameScene.getLastScore());
+                                    KeyFrame update = new KeyFrame(Duration.ONE, event -> {
+                                        reset.setDisable(false);
+                                        start.setDisable(true);
+                                        items.add(nick + " " + gameScene.getLastScore());
+                                    });
+
+                                    Timeline tl = new Timeline(update);
+                                    tl.setCycleCount(1);
+                                    tl.play();
+                                } catch (Exception e) {
+                                    System.out.println("error");
+                                }
+                                final CountDownLatch latch = new CountDownLatch(1);
+                                latch.await();
+                                //Keep with the background work
+                                return null;
+                            }
+                        };
+                    }
+                };
+                service.start();
+            } catch (Exception e) {
+            }
+        });
+
+        reset.setOnAction(event -> {
+            start.setDisable(false);
+            gameScene.resetAll();
+        });
 
         root.setCenter(gameScene);
         root.setRight(settingBar);
@@ -105,36 +184,7 @@ public class GameClient extends Application {
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        String fromServer;
-
-        Socket clientSocket = new Socket("localhost", 4444);
-        showNickPopup();
-        BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-        PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
-
-        fromServer = inFromServer.readLine();
-        System.out.println(fromServer);
-        output.println(nick);
-
-        fromServer = inFromServer.readLine();
-
-        parseInputString(fromServer, items);
-
-        Thread someThread = new Thread() {
-            @Override
-            public void run() {
-                while (!gameScene.isDead()) {
-                    try {
-                        Thread.sleep(1000);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-                output.println(gameScene.getLastScore());
-            }
-        };
-
-        someThread.start();
+        //parseInputString(inFromServer.readLine(),items);
 
         primaryStage.setOnCloseRequest(e -> {
             Platform.exit();

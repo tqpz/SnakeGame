@@ -98,7 +98,6 @@ public class GameScene extends Pane {
                         ANIMATION_SPEED--;
                         apple.remove(i);
                         addApples(1);
-                        System.out.println(ANIMATION_SPEED);
                     }
                 }
                 move();
@@ -132,6 +131,7 @@ public class GameScene extends Pane {
     }
 
     public void resetAll() {
+        timer.stop();
         setInitialState();
         requestLayout();
         dead = false;
