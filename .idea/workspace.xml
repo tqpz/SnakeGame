@@ -2,13 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eaa7881d-0a1f-4be5-aee9-fe1a11132756" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/GameServer/GameClient.class" afterPath="$PROJECT_DIR$/out/production/GameServer/GameClient.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/GameServer/GameScene$1.class" afterPath="$PROJECT_DIR$/out/production/GameServer/GameScene$1.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/GameServer/GameScene.class" afterPath="$PROJECT_DIR$/out/production/GameServer/GameScene.class" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/out/production/GameServer/Server.class" afterPath="$PROJECT_DIR$/out/production/GameServer/Server.class" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/GameClient.java" afterPath="$PROJECT_DIR$/src/GameClient.java" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/src/GameScene.java" afterPath="$PROJECT_DIR$/src/GameScene.java" />
     </list>
     <ignored path="GameServer.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,8 +31,8 @@
           <file leaf-file-name="GameClient.java" pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/src/GameClient.java">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="488">
-                  <caret line="67" column="74" selection-start-line="67" selection-start-column="74" selection-end-line="67" selection-end-column="74" />
+                <state relative-caret-position="573">
+                  <caret line="72" column="19" selection-start-line="72" selection-start-column="19" selection-end-line="72" selection-end-column="19" />
                   <folding>
                     <element signature="imports" expanded="true" />
                   </folding>
@@ -511,7 +505,14 @@
       <option name="project" value="LOCAL" />
       <updated>1491411697296</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="user can now play few times and send scores to server without shutting down client">
+      <created>1491490139859</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1491490139859</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -605,7 +606,8 @@
     <MESSAGE value="created basic login popup" />
     <MESSAGE value="added passing nickname from client to server and scoreboard box" />
     <MESSAGE value="implemented provisional scoreboard" />
-    <option name="LAST_COMMIT_MESSAGE" value="implemented provisional scoreboard" />
+    <MESSAGE value="user can now play few times and send scores to server without shutting down client" />
+    <option name="LAST_COMMIT_MESSAGE" value="user can now play few times and send scores to server without shutting down client" />
     <option name="OPTIMIZE_IMPORTS_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REFORMAT_BEFORE_PROJECT_COMMIT" value="true" />
     <option name="REARRANGE_BEFORE_PROJECT_COMMIT" value="true" />
@@ -952,8 +954,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/GameClient.java">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="488">
-          <caret line="67" column="74" selection-start-line="67" selection-start-column="74" selection-end-line="67" selection-end-column="74" />
+        <state relative-caret-position="573">
+          <caret line="72" column="19" selection-start-line="72" selection-start-column="19" selection-end-line="72" selection-end-column="19" />
           <folding>
             <element signature="imports" expanded="true" />
           </folding>
