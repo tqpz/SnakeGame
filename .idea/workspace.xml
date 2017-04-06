@@ -2,6 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="eaa7881d-0a1f-4be5-aee9-fe1a11132756" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/out/production/GameServer/GameClient$1$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/out/production/GameServer/GameClient$1.class" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/out/production/GameServer/img/apple.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/src/img/apple.png" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/.idea/vcs.xml" />
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/dane.dat" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="GameServer.iws" />
