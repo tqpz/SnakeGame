@@ -23,6 +23,8 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Optional;
 import java.util.concurrent.CountDownLatch;
 
@@ -31,6 +33,9 @@ import java.util.concurrent.CountDownLatch;
  */
 public class GameClient extends Application {
     private static boolean closed = false;
+    //TODO sorting scoreboard by score -> on top best scores
+    //TODO user want to set nickname once, not every time he restarts game
+    ObservableList<String> test = FXCollections.observableArrayList();
     private String nick;
     private GameScene gameScene;
 
@@ -62,19 +67,53 @@ public class GameClient extends Application {
                 }
             }
         }
+        sortScoreBoard(items);
     }
 
-    //TODO sorting scoreboard by score -> on top best scores
-    //TODO user want to set nickname once, not every time he restarts game
-    public ObservableList<String> sortScoreBoard(ObservableList<String> items) {
+    public void sortScoreBoard(ObservableList<String> items) {
+
         for (int i = 0; i < items.size(); i++) {
-
+            String[] parts = items.get(i).split(" ");
+            items.remove(i);
+            String part1 = parts[0]; // 004
+            String part2 = parts[1];
+            items.add(i, part2 + " " + part1);
         }
-        return items;
+
+        Collections.sort(items, new Comparator<String>() {
+            public int compare(String o1, String o2) {
+                return extractInt(o1) - extractInt(o2);
+            }
+
+            int extractInt(String s) {
+                String num = s.replaceAll("\\D", "");
+                return num.isEmpty() ? 0 : Integer.parseInt(num);
+            }
+        });
+
+        for (int i = 0; i < items.size(); i++) {
+            String[] parts = items.get(i).split(" ");
+            items.remove(i);
+            String part1 = parts[0]; // 004
+            String part2 = parts[1];
+            items.add(i, part2 + " " + part1);
+        }
+
+        Collections.reverse(items);
     }
+
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+        test.add("leraw 43");
+        test.add("rawkr 22");
+        test.add("rawra 61");
+        test.add("adawd 5");
+        test.add("wdawd 1");
+        test.add("wassd 9");
+
+        sortScoreBoard(test);
+
         primaryStage.setTitle("Snake");
         primaryStage.setResizable(false);
 
@@ -135,6 +174,7 @@ public class GameClient extends Application {
                                         e.printStackTrace();
                                     }
                                 }
+
                                 try {
                                     output.println(gameScene.getLastScore());
                                     KeyFrame update = new KeyFrame(Duration.ONE, event -> {

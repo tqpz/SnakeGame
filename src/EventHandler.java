@@ -21,7 +21,6 @@ class EventHandler extends Thread {
     }
 
     public void run() {
-        String line;
         try {
             output = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
             input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -40,7 +39,6 @@ class EventHandler extends Thread {
 //                //System.out.println("null");
 //            }
 
-            System.out.println(score);
             items.remove(items.size() - 1);
             items.add(nick + " " + score);
 
