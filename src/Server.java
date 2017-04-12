@@ -1,5 +1,6 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -25,7 +26,7 @@ public class Server {
                 System.out.println("Connection number: " + connectionNumber + " from adress: "
                         + addr.getHostName() + " ["
                         + addr.getHostAddress() + "]");
-                new EventHandler(socket, connectionNumber, items).start();
+                new EventHandler<Event>(socket, connectionNumber, items).start();
                 connectionNumber++;
             }
         } catch (Exception e) {

@@ -1,10 +1,11 @@
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.Event;
 
 import java.io.*;
 import java.net.Socket;
 
-class EventHandler extends Thread {
+class EventHandler<W extends Event> extends Thread {
     boolean retire = false;
     private Socket socket;
     private int connectionNumber;

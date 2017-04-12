@@ -43,6 +43,31 @@ public class GameClient extends Application {
         launch(args);
     }
 
+    public String parseNick(String nickWithScore) {
+        String[] parts = nickWithScore.split(" ");
+        String part1 = parts[0];
+        String part2 = parts[1];
+        int counter = 1;
+        String dots = "";
+        String showable = dots + part2;
+        System.out.println(part1);
+
+        while (showable.length() < 13) {
+            dots += ".";
+            showable = part1 + dots;
+        }
+        if (Integer.parseInt(part2) > 9) {
+            dots = dots.substring(0, dots.length() - 1);
+            showable = part1 + dots + part2;
+        } else if (Integer.parseInt(part2) > 99) {
+            dots = dots.substring(0, dots.length() - 2);
+            showable = part1 + dots + part2;
+        } else {
+            showable = part1 + dots + part2;
+        }
+        return showable;
+    }
+
     private void showNickPopup() {
         TextInputDialog dialog = new TextInputDialog();
         dialog.setTitle("Hello!");
@@ -50,7 +75,7 @@ public class GameClient extends Application {
         dialog.setContentText("Please enter your name:");
         Optional<String> result = dialog.showAndWait();
         result.ifPresent(name -> {
-            nick = name;
+            nick = name.replaceAll("\\s+", "").toUpperCase();
         });
     }
 
@@ -94,9 +119,27 @@ public class GameClient extends Application {
         for (int i = 0; i < items.size(); i++) {
             String[] parts = items.get(i).split(" ");
             items.remove(i);
-            String part1 = parts[0]; // 004
+            String part1 = parts[0];
             String part2 = parts[1];
-            items.add(i, part2 + " " + part1);
+            int counter = 1;
+            String dots = "";
+            String showable = dots + part2;
+            System.out.println(part2);
+
+            while (showable.length() < 13) {
+                dots += ".";
+                showable = part2 + dots;
+            }
+            if (Integer.parseInt(part1) > 9) {
+                dots = dots.substring(0, dots.length() - 1);
+                showable = part2 + dots + part1;
+            } else if (Integer.parseInt(part1) > 99) {
+                dots = dots.substring(0, dots.length() - 2);
+                showable = part2 + dots + part1;
+            } else {
+                showable = part2 + dots + part1;
+            }
+            items.add(i, showable);
         }
 
         Collections.reverse(items);
@@ -105,6 +148,7 @@ public class GameClient extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
+
         test.add("leraw 43");
         test.add("rawkr 22");
         test.add("rawra 61");
@@ -126,6 +170,8 @@ public class GameClient extends Application {
         Button start = new Button("Start");
 
         ListView<String> players = new ListView<>();
+        players.getStyleClass().add("scoreboard-font");
+
         ObservableList<String> items = FXCollections.observableArrayList();
         players.setItems(items);
         players.setLayoutY(50);
@@ -134,20 +180,32 @@ public class GameClient extends Application {
         players.setFocusTraversable(false);
 
         Scene scene = new Scene(root, 1000, 620);
-
         reset.setLayoutX(50);
 
         settingBar.getChildren().addAll(reset, start, players);
 
         start.setOnAction(event -> {
             reset.setDisable(true);
+            start.setDisable(true);
+
             String fromServer;
             items.clear();
 
             try {
                 Socket clientSocket = new Socket("localhost", 4444);
-                showNickPopup();
+                if (nick == null)
+                    showNickPopup();
                 gameScene.getTimer().start();
+
+                primaryStage.setOnCloseRequest(e -> {
+                    if (gameScene.isDead()) {
+                        Platform.exit();
+                        System.exit(0);
+                        closed = true;
+                    } else {
+                        e.consume();
+                    }
+                });
 
                 BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
                 PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
@@ -168,6 +226,7 @@ public class GameClient extends Application {
                             protected Void call() throws Exception {
                                 //Background work
                                 while (!gameScene.isDead()) {
+
                                     try {
                                         Thread.sleep(1000);
                                     } catch (InterruptedException e) {
@@ -180,7 +239,9 @@ public class GameClient extends Application {
                                     KeyFrame update = new KeyFrame(Duration.ONE, event -> {
                                         reset.setDisable(false);
                                         start.setDisable(true);
-                                        items.add(nick + " " + gameScene.getLastScore());
+                                        String localNick = nick + " " + gameScene.getLastScore();
+                                        localNick = parseNick(localNick);
+                                        items.add(localNick);
                                     });
 
                                     Timeline tl = new Timeline(update);
@@ -220,16 +281,12 @@ public class GameClient extends Application {
             else if (key.getCode() == KeyCode.RIGHT && gameScene.getLastDirection() != KeyCode.LEFT)
                 gameScene.setLastDirection(KeyCode.RIGHT);
         });
+        root.getStylesheets().addAll("style.css");
 
         primaryStage.setScene(scene);
         primaryStage.show();
 
         //parseInputString(inFromServer.readLine(),items);
 
-        primaryStage.setOnCloseRequest(e -> {
-            Platform.exit();
-            System.exit(0);
-            closed = true;
-        });
     }
 }
