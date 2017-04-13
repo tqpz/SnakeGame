@@ -8,6 +8,7 @@ import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListView;
 import javafx.scene.control.TextInputDialog;
@@ -18,11 +19,10 @@ import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
+import java.io.*;
+import java.net.ConnectException;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Optional;
@@ -50,7 +50,6 @@ public class GameClient extends Application {
         int counter = 1;
         String dots = "";
         String showable = dots + part2;
-        System.out.println(part1);
 
         while (showable.length() < 13) {
             dots += ".";
@@ -77,6 +76,13 @@ public class GameClient extends Application {
         result.ifPresent(name -> {
             nick = name.replaceAll("\\s+", "").toUpperCase();
         });
+    }
+
+    private void popupMessage(String msg) {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Message");
+        alert.setContentText(msg);
+        alert.show();
     }
 
     public void parseInputString(String fromServer, ObservableList<String> items) {
@@ -124,7 +130,6 @@ public class GameClient extends Application {
             int counter = 1;
             String dots = "";
             String showable = dots + part2;
-            System.out.println(part2);
 
             while (showable.length() < 13) {
                 dots += ".";
@@ -192,7 +197,7 @@ public class GameClient extends Application {
             items.clear();
 
             try {
-                Socket clientSocket = new Socket("localhost", 4444);
+                Socket clientSocket = new Socket("192.168.0.104", 4444);
                 if (nick == null)
                     showNickPopup();
                 gameScene.getTimer().start();
@@ -211,10 +216,13 @@ public class GameClient extends Application {
                 PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
 
                 fromServer = inFromServer.readLine();
-                System.out.println(fromServer);
+                System.out.println("Recieved from server: " + fromServer);
+
                 output.println(nick);
+                System.out.println("Sent to server: " + nick);
 
                 fromServer = inFromServer.readLine();
+                System.out.println("Recieved from server: " + fromServer);
 
                 parseInputString(fromServer, items);
 
@@ -236,6 +244,8 @@ public class GameClient extends Application {
 
                                 try {
                                     output.println(gameScene.getLastScore());
+                                    System.out.println("Sent to server: " + gameScene.getLastScore());
+
                                     KeyFrame update = new KeyFrame(Duration.ONE, event -> {
                                         reset.setDisable(false);
                                         start.setDisable(true);
@@ -259,7 +269,13 @@ public class GameClient extends Application {
                     }
                 };
                 service.start();
-            } catch (Exception e) {
+            } catch (ConnectException e) {
+                popupMessage(e.toString());
+                primaryStage.close();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         });
 

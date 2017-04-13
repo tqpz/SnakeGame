@@ -28,12 +28,15 @@ class EventHandler<W extends Event> extends Thread {
             output.println("Connected to the server");
 
             nick = input.readLine();
+            System.out.println("Get from server: " + nick);
 
-            items.add(nick);
-
+            items.add(nick + " " + 2);
+//
             output.println(items);
+            System.out.println("Sent to client: " + items);
 
             score = input.readLine();
+            System.out.println("Get from server: " + score);
 
 //            while(score.equals("0")){
 //                Thread.sleep(1000);
@@ -44,6 +47,8 @@ class EventHandler<W extends Event> extends Thread {
             items.add(nick + " " + score);
 
             output.println(items);
+            System.out.println("Sent to client: " + items);
+
 
             System.out.println("Connection number: "
                     + connectionNumber + " disconnected");
