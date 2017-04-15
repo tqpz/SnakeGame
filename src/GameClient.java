@@ -22,6 +22,7 @@ import javafx.util.Duration;
 import java.io.*;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.Collections;
 import java.util.Comparator;
@@ -33,11 +34,12 @@ import java.util.concurrent.CountDownLatch;
  */
 public class GameClient extends Application {
     private static boolean closed = false;
-    //TODO sorting scoreboard by score -> on top best scores
-    //TODO user want to set nickname once, not every time he restarts game
+    //TODO HANDLE CANCEL BUTTON ON CONNECT POPUP
     ObservableList<String> test = FXCollections.observableArrayList();
     private String nick;
+    private String ip;
     private GameScene gameScene;
+    private boolean connected;
 
     public static void main(String args[]) throws Exception {
         launch(args);
@@ -47,7 +49,6 @@ public class GameClient extends Application {
         String[] parts = nickWithScore.split(" ");
         String part1 = parts[0];
         String part2 = parts[1];
-        int counter = 1;
         String dots = "";
         String showable = dots + part2;
 
@@ -76,6 +77,26 @@ public class GameClient extends Application {
         result.ifPresent(name -> {
             nick = name.replaceAll("\\s+", "").toUpperCase();
         });
+    }
+
+    private void showConnecionPopup() {
+        TextInputDialog dialog = new TextInputDialog();
+        dialog.setTitle("Hello!");
+        dialog.setHeaderText("Connection");
+        dialog.setContentText("Please enter server ip:");
+        Optional<String> result = dialog.showAndWait();
+        result.ifPresent(adress -> {
+            ip = adress.replaceAll("\\s+", "");
+        });
+        try {
+            Socket clientSocket = new Socket(ip, 4444);
+            clientSocket.close();
+            connected = true;
+        } catch (IOException e) {
+            popupMessage("Sever with ip '" + ip + "' doesn't exist! "
+                    + "\n" + e.toString());
+            connected = false;
+        }
     }
 
     private void popupMessage(String msg) {
@@ -127,7 +148,6 @@ public class GameClient extends Application {
             items.remove(i);
             String part1 = parts[0];
             String part2 = parts[1];
-            int counter = 1;
             String dots = "";
             String showable = dots + part2;
 
@@ -154,155 +174,151 @@ public class GameClient extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
 
-        test.add("leraw 43");
-        test.add("rawkr 22");
-        test.add("rawra 61");
-        test.add("adawd 5");
-        test.add("wdawd 1");
-        test.add("wassd 9");
+        showConnecionPopup();
 
-        sortScoreBoard(test);
+        if (connected) {
 
-        primaryStage.setTitle("Snake");
-        primaryStage.setResizable(false);
+            primaryStage.setTitle("Snake");
+            primaryStage.setResizable(false);
 
-        BorderPane root = new BorderPane();
-        gameScene = new GameScene();
-        Pane settingBar = new Pane();
-        root.setPadding(new Insets(10, 20, 10, 20));
+            BorderPane root = new BorderPane();
+            gameScene = new GameScene();
+            Pane settingBar = new Pane();
+            root.setPadding(new Insets(10, 20, 10, 20));
 
-        Button reset = new Button("Try again");
-        Button start = new Button("Start");
+            Button reset = new Button("Try again");
+            Button start = new Button("Start");
 
-        ListView<String> players = new ListView<>();
-        players.getStyleClass().add("scoreboard-font");
+            ListView<String> players = new ListView<>();
+            players.getStyleClass().add("scoreboard-font");
 
-        ObservableList<String> items = FXCollections.observableArrayList();
-        players.setItems(items);
-        players.setLayoutY(50);
-        players.setMaxHeight(400);
-        players.setMaxWidth(150);
-        players.setFocusTraversable(false);
+            ObservableList<String> items = FXCollections.observableArrayList();
+            players.setItems(items);
+            players.setLayoutY(50);
+            players.setMaxHeight(400);
+            players.setMaxWidth(150);
+            players.setFocusTraversable(false);
 
-        Scene scene = new Scene(root, 1000, 620);
-        reset.setLayoutX(50);
+            Scene scene = new Scene(root, 1000, 620);
+            reset.setLayoutX(50);
 
-        settingBar.getChildren().addAll(reset, start, players);
+            settingBar.getChildren().addAll(reset, start, players);
 
-        start.setOnAction(event -> {
-            reset.setDisable(true);
-            start.setDisable(true);
+            start.setOnAction(event -> {
+                reset.setDisable(true);
+                start.setDisable(true);
 
-            String fromServer;
-            items.clear();
+                String fromServer;
+                items.clear();
 
-            try {
-                Socket clientSocket = new Socket("192.168.0.104", 4444);
-                if (nick == null)
-                    showNickPopup();
-                gameScene.getTimer().start();
+                try {
+                    Socket clientSocket = new Socket(ip, 4444);
+                    if (nick == null)
+                        showNickPopup();
+                    gameScene.getTimer().start();
 
-                primaryStage.setOnCloseRequest(e -> {
-                    if (gameScene.isDead()) {
-                        Platform.exit();
-                        System.exit(0);
-                        closed = true;
-                    } else {
-                        e.consume();
-                    }
-                });
+                    primaryStage.setOnCloseRequest(e -> {
+                        if (gameScene.isDead()) {
+                            Platform.exit();
+                            System.exit(0);
+                            closed = true;
+                        } else {
+                            e.consume();
+                        }
+                    });
 
-                BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
+                    BufferedReader inFromServer = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                    PrintWriter output = new PrintWriter(new OutputStreamWriter(clientSocket.getOutputStream()), true);
 
-                fromServer = inFromServer.readLine();
-                System.out.println("Recieved from server: " + fromServer);
+                    fromServer = inFromServer.readLine();
+                    System.out.println("Recieved from server: " + fromServer);
 
-                output.println(nick);
-                System.out.println("Sent to server: " + nick);
+                    output.println(nick);
+                    System.out.println("Sent to server: " + nick);
 
-                fromServer = inFromServer.readLine();
-                System.out.println("Recieved from server: " + fromServer);
+                    fromServer = inFromServer.readLine();
+                    System.out.println("Recieved from server: " + fromServer);
 
-                parseInputString(fromServer, items);
+                    parseInputString(fromServer, items);
 
-                Service<Void> service = new Service<Void>() {
-                    @Override
-                    protected Task<Void> createTask() {
-                        return new Task<Void>() {
-                            @Override
-                            protected Void call() throws Exception {
-                                //Background work
-                                while (!gameScene.isDead()) {
+                    Service<Void> service = new Service<Void>() {
+                        @Override
+                        protected Task<Void> createTask() {
+                            return new Task<Void>() {
+                                @Override
+                                protected Void call() throws Exception {
+                                    //Background work
+                                    while (!gameScene.isDead()) {
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
 
                                     try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
+                                        output.println(gameScene.getLastScore());
+                                        System.out.println("Sent to server: " + gameScene.getLastScore());
+
+                                        KeyFrame update = new KeyFrame(Duration.ONE, event -> {
+                                            reset.setDisable(false);
+                                            start.setDisable(true);
+                                            String localNick = nick + " " + gameScene.getLastScore();
+                                            localNick = parseNick(localNick);
+                                            items.add(localNick);
+                                        });
+
+                                        Timeline tl = new Timeline(update);
+                                        tl.setCycleCount(1);
+                                        tl.play();
+                                    } catch (Exception e) {
+                                        System.out.println("error");
                                     }
+                                    final CountDownLatch latch = new CountDownLatch(1);
+                                    latch.await();
+                                    //Keep with the background work
+                                    return null;
                                 }
+                            };
+                        }
+                    };
+                    service.start();
+                } catch (ConnectException e) {
+                    popupMessage(e.toString());
+                    primaryStage.close();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                } catch (SocketException w) {
+                    popupMessage(w.toString());
+                    primaryStage.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
 
-                                try {
-                                    output.println(gameScene.getLastScore());
-                                    System.out.println("Sent to server: " + gameScene.getLastScore());
+            reset.setOnAction(event -> {
+                start.setDisable(false);
+                gameScene.resetAll();
+            });
 
-                                    KeyFrame update = new KeyFrame(Duration.ONE, event -> {
-                                        reset.setDisable(false);
-                                        start.setDisable(true);
-                                        String localNick = nick + " " + gameScene.getLastScore();
-                                        localNick = parseNick(localNick);
-                                        items.add(localNick);
-                                    });
+            root.setCenter(gameScene);
+            root.setRight(settingBar);
 
-                                    Timeline tl = new Timeline(update);
-                                    tl.setCycleCount(1);
-                                    tl.play();
-                                } catch (Exception e) {
-                                    System.out.println("error");
-                                }
-                                final CountDownLatch latch = new CountDownLatch(1);
-                                latch.await();
-                                //Keep with the background work
-                                return null;
-                            }
-                        };
-                    }
-                };
-                service.start();
-            } catch (ConnectException e) {
-                popupMessage(e.toString());
-                primaryStage.close();
-            } catch (UnknownHostException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        });
+            scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+                if (key.getCode() == KeyCode.DOWN && gameScene.getLastDirection() != KeyCode.UP)
+                    gameScene.setLastDirection(KeyCode.DOWN);
+                else if (key.getCode() == KeyCode.UP && gameScene.getLastDirection() != KeyCode.DOWN)
+                    gameScene.setLastDirection(KeyCode.UP);
+                else if (key.getCode() == KeyCode.LEFT && gameScene.getLastDirection() != KeyCode.RIGHT)
+                    gameScene.setLastDirection(KeyCode.LEFT);
+                else if (key.getCode() == KeyCode.RIGHT && gameScene.getLastDirection() != KeyCode.LEFT)
+                    gameScene.setLastDirection(KeyCode.RIGHT);
+            });
+            root.getStylesheets().addAll("style.css");
 
-        reset.setOnAction(event -> {
-            start.setDisable(false);
-            gameScene.resetAll();
-        });
-
-        root.setCenter(gameScene);
-        root.setRight(settingBar);
-
-        scene.addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-            if (key.getCode() == KeyCode.DOWN && gameScene.getLastDirection() != KeyCode.UP)
-                gameScene.setLastDirection(KeyCode.DOWN);
-            else if (key.getCode() == KeyCode.UP && gameScene.getLastDirection() != KeyCode.DOWN)
-                gameScene.setLastDirection(KeyCode.UP);
-            else if (key.getCode() == KeyCode.LEFT && gameScene.getLastDirection() != KeyCode.RIGHT)
-                gameScene.setLastDirection(KeyCode.LEFT);
-            else if (key.getCode() == KeyCode.RIGHT && gameScene.getLastDirection() != KeyCode.LEFT)
-                gameScene.setLastDirection(KeyCode.RIGHT);
-        });
-        root.getStylesheets().addAll("style.css");
-
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        //parseInputString(inFromServer.readLine(),items);
-
+            primaryStage.setScene(scene);
+            primaryStage.show();
+            popupMessage("Connected!");
+        }
     }
 }

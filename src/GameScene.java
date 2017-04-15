@@ -51,6 +51,17 @@ public class GameScene extends Pane {
         apple = new ArrayList<>(0);
         addApples(7);
 
+//        addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
+//            if (key.getCode() == KeyCode.DOWN && getLastDirection() != KeyCode.UP)
+//                setLastDirection(KeyCode.DOWN);
+//            else if (key.getCode() == KeyCode.UP && getLastDirection() != KeyCode.DOWN)
+//                setLastDirection(KeyCode.UP);
+//            else if (key.getCode() == KeyCode.LEFT && getLastDirection() != KeyCode.RIGHT)
+//                setLastDirection(KeyCode.LEFT);
+//            else if (key.getCode() == KeyCode.RIGHT && getLastDirection() != KeyCode.LEFT)
+//                setLastDirection(KeyCode.RIGHT);
+//        });
+
         timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
