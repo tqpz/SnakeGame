@@ -2,11 +2,13 @@ import javafx.application.Application;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.net.InetAddress;
@@ -24,24 +26,41 @@ public class Server extends Application {
         launch();
     }
 
+
+    public HBox addHBox(Button buttonCurrent, Button buttonProjected, TextField port) {
+        HBox hbox = new HBox();
+        hbox.setPadding(new Insets(15, 12, 15, 12));
+        hbox.setSpacing(30);
+        hbox.setStyle("-fx-background-color: #336699;");
+
+        buttonCurrent.setPrefSize(100, 20);
+
+        buttonProjected.setPrefSize(100, 20);
+
+        port.setPrefSize(200, 20);
+        port.setPromptText("Set port");
+        hbox.getChildren().addAll(buttonCurrent, buttonProjected, port);
+
+        return hbox;
+    }
+
     @Override
     public void start(Stage primaryStage) throws Exception {
         ObservableList<String> items = FXCollections.observableArrayList();
 
         BorderPane root = new BorderPane();
-
-        Pane panel = new Pane();
-
-        TextArea screen = new TextArea();
         Button start = new Button("Start");
         Button stop = new Button("Stop");
+        TextField port = new TextField();
 
+        HBox topBox = addHBox(start, stop, port);
 
-        panel.getChildren().addAll(start);
-        root.getChildren().addAll(panel, screen);
+        TextArea screen = new TextArea();
+        screen.setEditable(false);
 
-        //root.setCenter(panel);
-        //root.setBottom(screen);
+        root.setTop(topBox);
+
+        root.setCenter(screen);
 
         Task task = new Task<Void>() {
             int connectionNumber = 1;
@@ -68,7 +87,6 @@ public class Server extends Application {
         th.setDaemon(true);
 
         start.setOnAction(event -> th.start());
-
 
         primaryStage.setScene(new Scene(root, 500, 500));
         primaryStage.show();
