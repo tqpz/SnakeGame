@@ -1,0 +1,10 @@
+.scoreboard-font{
+      -fx-font: 14px Monospace;
+}
+
+.game-scene{
+    -fx-background-image: url("img/bg-white.png");
+    -fx-background-repeat: stretch;
+    -fx-background-size: 800 600;
+    /*-fx-effect: dropshadow(three-pass-box, black, 10, 0.5, 0, 0);*/
+}

@@ -35,6 +35,8 @@ public class GameScene extends Pane {
     private int posY = 10;
 
     GameScene() {
+        getStyleClass().add("game-scene");
+
         getChildren().add(canvas);
         isRunning = false;
 
@@ -51,17 +53,6 @@ public class GameScene extends Pane {
         apple = new ArrayList<>(0);
         addApples(7);
 
-//        addEventHandler(KeyEvent.KEY_PRESSED, (key) -> {
-//            if (key.getCode() == KeyCode.DOWN && getLastDirection() != KeyCode.UP)
-//                setLastDirection(KeyCode.DOWN);
-//            else if (key.getCode() == KeyCode.UP && getLastDirection() != KeyCode.DOWN)
-//                setLastDirection(KeyCode.UP);
-//            else if (key.getCode() == KeyCode.LEFT && getLastDirection() != KeyCode.RIGHT)
-//                setLastDirection(KeyCode.LEFT);
-//            else if (key.getCode() == KeyCode.RIGHT && getLastDirection() != KeyCode.LEFT)
-//                setLastDirection(KeyCode.RIGHT);
-//        });
-
         timer = new AnimationTimer() {
             private long lastUpdate = 0;
 
@@ -75,18 +66,6 @@ public class GameScene extends Pane {
                 }
             }
         };
-    }
-
-    public int getLastScore() {
-        return lastScore;
-    }
-
-    public boolean isDead() {
-        return dead;
-    }
-
-    public boolean isRunning() {
-        return isRunning;
     }
 
     private void updateScene() {
@@ -210,7 +189,7 @@ public class GameScene extends Pane {
 
     private void drawSnake() {
         try {
-            gc.setFill(Color.GREEN);
+            gc.setFill(Color.GREENYELLOW);
             for (Point newPoint : snake) {
                 gc.fillRect(SNAKE_SIZE + (SNAKE_SIZE * newPoint.x),
                         SNAKE_SIZE + (SNAKE_SIZE * newPoint.y),
@@ -289,5 +268,23 @@ public class GameScene extends Pane {
     public AnimationTimer getTimer() {
         return timer;
     }
+
+
+    public int getSnakeLength() {
+        return snakeLength;
+    }
+
+    public int getLastScore() {
+        return lastScore;
+    }
+
+    public boolean isDead() {
+        return dead;
+    }
+
+    public boolean isRunning() {
+        return isRunning;
+    }
+
 
 }

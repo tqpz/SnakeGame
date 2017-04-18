@@ -5,7 +5,6 @@ import java.io.*;
 import java.net.Socket;
 
 class EventHandler extends Thread {
-    boolean retire = false;
     private Socket socket;
     private int connectionNumber;
     private PrintWriter output;
@@ -29,28 +28,30 @@ class EventHandler extends Thread {
             nick = input.readLine();
             System.out.println("Get from server: " + nick);
 
-            items.add(nick + " " + 2);
+            if (nick == null)
+                nick = "unnamed";
+
+            items.add(nick + " " + 0);
 //
             output.println(items);
-            System.out.println("Sent to client: " + items);
+            ServerApplication.appendOnScreen("Sent to client: " + items + "\n");
+
+            if (score == null)
+                score = "0";
 
             score = input.readLine();
             System.out.println("Get from server: " + score);
 
-//            while(score.equals("0")){
-//                Thread.sleep(1000);
-//                //System.out.println("null");
-//            }
-
             items.remove(items.size() - 1);
-            items.add(nick + " " + score);
+            if (score != null && nick != null)
+                items.add(nick + " " + score);
 
             output.println(items);
-            System.out.println("Sent to client: " + items);
+            ServerApplication.appendOnScreen("Sent to client: " + items + "\n");
 
 
-            System.out.println("Connection number: "
-                    + connectionNumber + " disconnected");
+            ServerApplication.appendOnScreen("Connection number: "
+                    + connectionNumber + " disconnected" + "\n");
 
             socket.close();
         } catch (IOException e) {

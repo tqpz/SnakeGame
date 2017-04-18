@@ -7,17 +7,18 @@ import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextInputDialog;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 import javafx.util.Duration;
+import javafx.util.Pair;
 
 import java.io.*;
 import java.net.ConnectException;
@@ -33,13 +34,11 @@ import java.util.concurrent.CountDownLatch;
  * Created by Mateusz on 29.03.2017.
  */
 public class GameClient extends Application {
-    private static boolean closed = false;
-    //TODO HANDLE CANCEL BUTTON ON CONNECT POPUP
-    ObservableList<String> test = FXCollections.observableArrayList();
     private String nick;
     private String ip;
     private GameScene gameScene;
     private boolean connected;
+    private int PORT;
 
     public static void main(String args[]) throws Exception {
         launch(args);
@@ -80,21 +79,79 @@ public class GameClient extends Application {
     }
 
     private void showConnecionPopup() {
-        TextInputDialog dialog = new TextInputDialog();
-        dialog.setTitle("Hello!");
-        dialog.setHeaderText("Connection");
-        dialog.setContentText("Please enter server ip:");
-        Optional<String> result = dialog.showAndWait();
-        result.ifPresent(adress -> {
-            ip = adress.replaceAll("\\s+", "");
+
+        // Create the custom dialog.
+        Dialog<Pair<String, String>> dialog = new Dialog<>();
+        dialog.setTitle("Connection");
+        dialog.setHeaderText("Please type ip adress and port");
+
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image("img/Snake-icon.png"));
+
+// Set the button types.
+        ButtonType loginButtonType = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
+
+// Create the username and password labels and fields.
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 15, 10, 10));
+
+        TextField adress = new TextField();
+        adress.setPromptText("Adress");
+        TextField port = new TextField();
+        port.setPromptText("Port");
+
+        grid.add(new Label("Ip:"), 0, 0);
+        grid.add(adress, 1, 0);
+        grid.add(new Label("Port:"), 0, 1);
+        grid.add(port, 1, 1);
+
+// Enable/Disable login button depending on whether a username was entered.
+        Node loginButton = dialog.getDialogPane().lookupButton(loginButtonType);
+        loginButton.setDisable(true);
+
+// Do some validation (using the Java 8 lambda syntax).
+        adress.textProperty().addListener((observable, oldValue, newValue) -> {
+            loginButton.setDisable(newValue.trim().isEmpty());
         });
+
+        dialog.getDialogPane().setContent(grid);
+
+// Request focus on the username field by default.
+        Platform.runLater(() -> adress.requestFocus());
+
+// Convert the result to a username-password-pair when the login button is clicked.
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == loginButtonType) {
+                return new Pair<>(adress.getText(), port.getText());
+            }
+            return null;
+        });
+
+        Optional<Pair<String, String>> result = dialog.showAndWait();
+
+        result.ifPresent(data -> {
+            ip = data.getKey().replaceAll("\\s+", "");
+            try {
+                PORT = Integer.parseInt(data.getValue());
+            } catch (NumberFormatException e) {
+                popupMessage("Adress and port need to be numbers!" + e.toString());
+                connected = false;
+            }
+        });
+
         try {
-            Socket clientSocket = new Socket(ip, 4444);
+            Socket clientSocket = new Socket(ip, PORT);
             clientSocket.close();
             connected = true;
         } catch (IOException e) {
             popupMessage("Sever with ip '" + ip + "' doesn't exist! "
                     + "\n" + e.toString());
+            connected = false;
+        } catch (NumberFormatException e) {
+            popupMessage("Adress and port need to be numbers!" + e.toString());
             connected = false;
         }
     }
@@ -173,7 +230,7 @@ public class GameClient extends Application {
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-
+        primaryStage.getIcons().add(new Image("img/Snake-icon.png"));
         showConnecionPopup();
 
         if (connected) {
@@ -189,18 +246,21 @@ public class GameClient extends Application {
             Button reset = new Button("Try again");
             Button start = new Button("Start");
 
+            reset.setPrefSize(65, 20);
+            start.setPrefSize(65, 20);
+
             ListView<String> players = new ListView<>();
             players.getStyleClass().add("scoreboard-font");
 
             ObservableList<String> items = FXCollections.observableArrayList();
             players.setItems(items);
             players.setLayoutY(50);
-            players.setMaxHeight(400);
+            players.setPrefHeight(550);
             players.setMaxWidth(150);
             players.setFocusTraversable(false);
 
             Scene scene = new Scene(root, 1000, 620);
-            reset.setLayoutX(50);
+            reset.setLayoutX(85);
 
             settingBar.getChildren().addAll(reset, start, players);
 
@@ -212,7 +272,7 @@ public class GameClient extends Application {
                 items.clear();
 
                 try {
-                    Socket clientSocket = new Socket(ip, 4444);
+                    Socket clientSocket = new Socket(ip, PORT);
                     if (nick == null)
                         showNickPopup();
                     gameScene.getTimer().start();
@@ -221,7 +281,6 @@ public class GameClient extends Application {
                         if (gameScene.isDead()) {
                             Platform.exit();
                             System.exit(0);
-                            closed = true;
                         } else {
                             e.consume();
                         }
