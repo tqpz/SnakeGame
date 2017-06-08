@@ -33,6 +33,10 @@ import java.util.concurrent.CountDownLatch;
 /**
  * Created by Mateusz on 29.03.2017.
  */
+
+/*
+Class responsible for showing window and ui
+ */
 public class GameClient extends Application {
     private String nick;
     private String ip;
@@ -88,11 +92,11 @@ public class GameClient extends Application {
         Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
         stage.getIcons().add(new Image("img/Snake-icon.png"));
 
-// Set the button types.
+        // Set the button types.
         ButtonType loginButtonType = new ButtonType("Connect", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(loginButtonType, ButtonType.CANCEL);
 
-// Create the username and password labels and fields.
+        // Create the username and password labels and fields.
         GridPane grid = new GridPane();
         grid.setHgap(10);
         grid.setVgap(10);
@@ -108,21 +112,21 @@ public class GameClient extends Application {
         grid.add(new Label("Port:"), 0, 1);
         grid.add(port, 1, 1);
 
-// Enable/Disable login button depending on whether a username was entered.
+        // Enable/Disable login button depending on whether a username was entered.
         Node loginButton = dialog.getDialogPane().lookupButton(loginButtonType);
         loginButton.setDisable(true);
 
-// Do some validation (using the Java 8 lambda syntax).
+        // Do some validation (using the Java 8 lambda syntax).
         adress.textProperty().addListener((observable, oldValue, newValue) -> {
             loginButton.setDisable(newValue.trim().isEmpty());
         });
 
         dialog.getDialogPane().setContent(grid);
 
-// Request focus on the username field by default.
+        // Request focus on the username field by default.
         Platform.runLater(() -> adress.requestFocus());
 
-// Convert the result to a username-password-pair when the login button is clicked.
+        // Convert the result to a username-password-pair when the login button is clicked.
         dialog.setResultConverter(dialogButton -> {
             if (dialogButton == loginButtonType) {
                 return new Pair<>(adress.getText(), port.getText());
@@ -342,6 +346,7 @@ public class GameClient extends Application {
                         }
                     };
                     service.start();
+
                 } catch (ConnectException e) {
                     popupMessage(e.toString());
                     primaryStage.close();

@@ -12,30 +12,19 @@ import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.Inet4Address;
-import java.net.ServerSocket;
 
 /**
  * Created by Mateusz on 29.03.2017.
  */
 public class ServerApplication extends Application {
     private static int PORT;
-    private static ServerSocket server;
-
     private static TextArea screen;
 
     public static void main(String[] args) {
         launch();
     }
 
-    public static int getPORT() {
-        return PORT;
-    }
-
-    public static void appendOnScreen(String msg) {
-        screen.appendText(msg);
-    }
-
-    public HBox addHBox(Button buttonCurrent, Button buttonProjected, TextField port) {
+    private HBox addHBox(Button buttonCurrent, Button buttonProjected, TextField port) {
         HBox hbox = new HBox();
         hbox.setPadding(new Insets(15, 12, 15, 12));
         hbox.setSpacing(30);
@@ -60,7 +49,7 @@ public class ServerApplication extends Application {
 
         BorderPane root = new BorderPane();
         Button start = new Button("Start");
-        Button stop = new Button("Exit");
+        Button stop = new Button("Stop");
         TextField port = new TextField();
 
         HBox topBox = addHBox(start, stop, port);
@@ -78,6 +67,7 @@ public class ServerApplication extends Application {
 
         start.setOnAction(event -> {
             start.setDisable(true);
+            stop.setDisable(false);
             try {
                 PORT = Integer.parseInt(port.getText());
                 ex[0] = new Executor();
@@ -97,20 +87,27 @@ public class ServerApplication extends Application {
         stop.setOnAction(event -> {
             try {
                 ex[0].getServer().close();
-                screen.appendText("ServerApplication stopped working" + "\n");
+                screen.appendText("Server stopped" + "\n");
                 PORT = 0;
+                start.setDisable(false);
+                stop.setDisable(true);
             } catch (IOException e) {
                 screen.appendText(e.toString());
                 e.printStackTrace();
             }
-
-            Platform.exit();
-            System.exit(0);
-
         });
 
         primaryStage.setScene(new Scene(root, 500, 500));
         primaryStage.show();
+    }
+
+
+    static int getPORT() {
+        return PORT;
+    }
+
+    static void appendOnScreen(String msg) {
+        screen.appendText(msg);
     }
 }
 

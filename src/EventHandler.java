@@ -11,7 +11,7 @@ class EventHandler extends Thread {
     private BufferedReader input;
     private String nick;
     private String score;
-    private ObservableList<String> items = FXCollections.observableArrayList();
+    private ObservableList<String> items;
 
     public EventHandler(Socket socket, int connectionNumber, ObservableList<String> items) {
         this.socket = socket;
@@ -32,7 +32,7 @@ class EventHandler extends Thread {
                 nick = "unnamed";
 
             items.add(nick + " " + 0);
-//
+
             output.println(items);
             ServerApplication.appendOnScreen("Sent to client: " + items + "\n");
 

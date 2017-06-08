@@ -14,7 +14,7 @@ public class Executor {
 
     private static ServerSocket server;
     private Task<Void> task;
-    public Executor() {
+    Executor() {
         task = new Task<Void>() {
             int PORT = ServerApplication.getPORT();
             int connectionNumber = 1;
@@ -23,7 +23,7 @@ public class Executor {
             @Override
             public Void call() throws Exception {
                 server = new ServerSocket(PORT);
-                ServerApplication.appendOnScreen("ServerApplication started with port: " + PORT + "\n");
+                ServerApplication.appendOnScreen("Server started with port: " + PORT + "\n");
                 while (true) {
                     Socket socket = server.accept();
                     InetAddress addr = socket.getInetAddress();

@@ -16,37 +16,43 @@ import java.util.Set;
 /**
  * Created by Mateusz on 29.03.2017.
  */
-public class GameScene extends Pane {
+
+ class GameScene extends Pane {
     private final static int SNAKE_SIZE = 10;
-    private static int ANIMATION_SPEED = 70;
-    private int snakeLength = 1;
+    private final static int GAME_SCENE_WIDTH = 800;
+    private final static int GAME_SCENE_HEIGHT = 600;
+    private static int animationSpeed;
+    private int snakeLength;
     private int lastScore;
-    private int gameSceneWidth;
-    private int gameSceneHeight;
     private AnimationTimer timer;
-    private Canvas canvas = new Canvas(gameSceneWidth, gameSceneHeight);
-    private GraphicsContext gc = canvas.getGraphicsContext2D();
+    private Canvas canvas;
+    private GraphicsContext gc;
     private ArrayList<Point> snake;
     private ArrayList<Point> apple;
     private KeyCode lastDirection;
-    private boolean dead = false;
-    private boolean isRunning = false;
-    private int posX = 10;
-    private int posY = 10;
+    private boolean dead;
+    private boolean isRunning;
+    private int posX;
+    private int posY;
 
     GameScene() {
+        animationSpeed = 70;
+        snakeLength = 1;
+        canvas = new Canvas(GAME_SCENE_WIDTH, GAME_SCENE_HEIGHT);
+        gc = canvas.getGraphicsContext2D();
+        dead = false;
+        isRunning = false;
+
         getStyleClass().add("game-scene");
 
         getChildren().add(canvas);
         isRunning = false;
 
-        posX = 25;
-        posY = 25;
+        posX = (int) (Math.random()*79);
+        posY = (int) (Math.random()*59);
 
-        gameSceneHeight = 600;
-        gameSceneWidth = 800;
-        canvas.setWidth(gameSceneWidth);
-        canvas.setHeight(gameSceneHeight);
+        canvas.setWidth(GAME_SCENE_WIDTH);
+        canvas.setHeight(GAME_SCENE_HEIGHT);
 
         snake = new ArrayList<>(snakeLength);
         snake.add(new Point(posX, posY));
@@ -58,7 +64,7 @@ public class GameScene extends Pane {
 
             @Override
             public void handle(long now) {
-                if (now - lastUpdate >= ANIMATION_SPEED * 1_000_000) {
+                if (now - lastUpdate >= animationSpeed * 1_000_000) {
                     requestLayout();
                     updateScene();
                     lastUpdate = now;
@@ -70,7 +76,7 @@ public class GameScene extends Pane {
 
     private void updateScene() {
         if (!dead) {
-            boolean[][] board = new boolean[gameSceneWidth / SNAKE_SIZE][gameSceneHeight / SNAKE_SIZE];
+            boolean[][] board = new boolean[GAME_SCENE_WIDTH / SNAKE_SIZE][GAME_SCENE_HEIGHT / SNAKE_SIZE];
             try {
                 for (int i = 0; i < snake.size(); i++) {
                     board[snake.get(i).x + 1][snake.get(i).y + 1] = true;
@@ -85,7 +91,7 @@ public class GameScene extends Pane {
                 for (int i = 0; i < apple.size(); i++) {
                     if (snake.get(snake.size() - 1).equals(apple.get(i))) {
                         snakeLength += 4;
-                        ANIMATION_SPEED--;
+                        animationSpeed--;
                         apple.remove(i);
                         addApples(1);
                     }
@@ -217,13 +223,13 @@ public class GameScene extends Pane {
                 gc.strokeLine(((i * SNAKE_SIZE) + SNAKE_SIZE),
                         0,
                         (i * SNAKE_SIZE) + SNAKE_SIZE,
-                        SNAKE_SIZE + (SNAKE_SIZE * gameSceneHeight / SNAKE_SIZE));
+                        SNAKE_SIZE + (SNAKE_SIZE * GAME_SCENE_HEIGHT / SNAKE_SIZE));
             }
 
             for (int i = 0; i < canvas.getHeight() / SNAKE_SIZE - 1; i++) {
                 gc.strokeLine(0,
                         ((i * SNAKE_SIZE) + SNAKE_SIZE),
-                        SNAKE_SIZE * (gameSceneWidth / SNAKE_SIZE),
+                        SNAKE_SIZE * (GAME_SCENE_WIDTH / SNAKE_SIZE),
                         ((i * SNAKE_SIZE) + SNAKE_SIZE));
             }
 
@@ -239,13 +245,8 @@ public class GameScene extends Pane {
         }
         isRunning = false;
 
-        posX = 25;
-        posY = 25;
-
-        gameSceneHeight = 600;
-        gameSceneWidth = 800;
-        canvas.setWidth(gameSceneWidth);
-        canvas.setHeight(gameSceneHeight);
+        posX = (int) (Math.random()*79);
+        posY = (int) (Math.random()*59);
 
         snake = new ArrayList<>(snakeLength);
         snake.add(new Point(posX, posY));
@@ -253,7 +254,7 @@ public class GameScene extends Pane {
         addApples(7);
 
         dead = false;
-        ANIMATION_SPEED = 50;
+        animationSpeed = 70;
         snakeLength = 1;
     }
 
@@ -269,11 +270,6 @@ public class GameScene extends Pane {
         return timer;
     }
 
-
-    public int getSnakeLength() {
-        return snakeLength;
-    }
-
     public int getLastScore() {
         return lastScore;
     }
@@ -281,10 +277,4 @@ public class GameScene extends Pane {
     public boolean isDead() {
         return dead;
     }
-
-    public boolean isRunning() {
-        return isRunning;
-    }
-
-
 }
